@@ -1,0 +1,10 @@
+# SetPalletList.srv — Provide the ordered list of pallets to be loaded.
+#
+# The node caches the list and uses it on the next plan_cargo call.
+# Internally the pallets are sorted by footprint area (lp * wp) in
+# descending order before planning (largest-first heuristic).
+
+cargo_planner_msgs/PalletDimensions[] pallets  # pallets to load (heterogeneous sizes ok)
+---
+bool   success
+string message
