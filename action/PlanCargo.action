@@ -1,38 +1,39 @@
-# PlanCargo.action — Asynchronous 2D cargo placement planning.
+# Asynchronous 2D cargo placement planning.
 #
-# The caller sends an empty goal (the planner reads the truck map and pallet
-# list that were previously stored via set_truck_map and set_pallet_list).
+# The caller sends an empty goal. The planner reads the container occupancy grid
+# and cargo list that were previously stored via set_container_occupancy_grid and
+# set_cargo_list.
 # The action server accepts the goal, immediately publishes a "computing..."
 # feedback message, runs the placement algorithm in a background thread, and
 # returns the full cargo plan when done.
 #
 # Preconditions (checked when the goal is accepted):
-#   - set_truck_map must have been called at least once.
-#   - set_pallet_list must have been called at least once, OR pallets must be
-#     configured via the "pallets" YAML parameter.
+#   - set_container_occupancy_grid must have been called at least once.
+#   - set_cargo_list must have been called at least once, OR cargo units must be
+#     configured via the "cargo" YAML parameter.
 #
 # If either precondition is not met the goal is aborted with success=false and
 # a descriptive message.
 
 # ── Goal ─────────────────────────────────────────────────────────────────────
-# Empty: the planner uses state already stored via set_truck_map /
-# set_pallet_list.  No per-invocation configuration is needed.
+# Empty: the planner uses state already stored via set_container_occupancy_grid /
+# set_cargo_list.  No per-invocation configuration is needed.
 ---
 
 # ── Result ───────────────────────────────────────────────────────────────────
 bool     success         # false when a precondition is not met or plan() raises
 string   message         # human-readable status or error description
 
-cargo_planner_msgs/PalletPlacement[] placements   # pallets that were placed
-string[]                             no_placed    # IDs of pallets that did not fit
+cargo_planner_msgs/CargoPlacement[] placements   # cargo units that were placed
+string[]                            no_placed    # IDs of cargo units that did not fit
 
-float64  placed_area_m2   # total footprint area of placed pallets [m²]
+float64  placed_area_m2   # total footprint area of placed cargo units [m²]
 float64  free_area_m2     # remaining free area after placement [m²]
 float64  total_area_m2    # total navigable area in the truck [m²]
 float64  utilization_pct  # placed_area_m2 / total_area_m2 * 100 [%]
 ---
 
 # ── Feedback ─────────────────────────────────────────────────────────────────
-string  status          # human-readable status, e.g. "computing... (6 pallets)"
-uint32  pallets_placed  # number of pallets successfully placed so far
-uint32  pallets_total   # total number of pallets in the list
+string  status        # human-readable status, e.g. "computing... (6 cargo units)"
+uint32  cargo_placed  # number of cargo units successfully placed so far
+uint32  cargo_total   # total number of cargo units in the list

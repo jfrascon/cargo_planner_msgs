@@ -10,10 +10,10 @@ find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME}
-  "msg/PalletDimensions.msg"
-  "msg/PalletPlacement.msg"
-  "srv/SetTruckMap.srv"
-  "srv/SetPalletList.srv"
+  "msg/CargoUnit.msg"
+  "msg/CargoPlacement.msg"
+  "srv/SetContainerOccupancyGrid.srv"
+  "srv/SetCargoList.srv"
   "srv/PlanCargo.srv"
   "action/PlanCargo.action"
   DEPENDENCIES

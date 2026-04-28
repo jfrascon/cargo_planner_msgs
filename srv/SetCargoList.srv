@@ -1,0 +1,6 @@
+# Provide the ordered list of cargo units to be loaded.
+
+cargo_planner_msgs/CargoUnit[] cargo_units  # cargo units to load
+---
+bool   success
+string message

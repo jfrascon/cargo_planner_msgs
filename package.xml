@@ -4,8 +4,9 @@
   <version>0.1.0</version>
   <description>
     ROS 2 messages and services for the cargo_planner package.
-    Defines the data model for pallet dimensions, placement results,
-    and the three service interfaces: SetTruckMap, SetPalletList, PlanCargo.
+    Defines the data model for cargo units, placement results,
+    and the three service interfaces: SetContainerOccupancyGrid, SetCargoList,
+    PlanCargo.
   </description>
   <maintainer email="user@example.com">cargo_planner</maintainer>
   <license>MIT</license>

@@ -1,19 +1,11 @@
-# PlanCargo.srv — Run the 2D placement algorithm and return the cargo plan.
+# Run the 2D placement algorithm and return the cargo plan.
 #
-# Requires a prior call to set_truck_map and set_pallet_list (or pallets
-# configured via YAML parameters). Returns one PalletPlacement per pallet
-# that could be placed, and the IDs of pallets that did not fit.
-#
-# The algorithm:
-#   1. Sorts pallets by footprint area descending (largest first).
-#   2. For each pallet, applies morphological erosion (cv::erode) on the
-#      current free-space image to find all valid anchor positions.
-#   3. Selects the best anchor using the configured placement heuristic
-#      (default: greedy wall-hugging, back-to-front).
-#   4. Marks the placed pallet as occupied before processing the next one.
+# Requires a prior call to set_container_occupancy_grid and set_cargo_list.
+# Returns one CargoPlacement per cargo unit that could be placed, and the IDs of cargo units that
+# did not fit.
 ---
-cargo_planner_msgs/PalletPlacement[] placements  # placed pallets with 3D center poses
-string[]                             no_placed   # IDs of pallets that did not fit
+cargo_planner_msgs/CargoPlacement[] placements  # placed cargo units with 3D center poses
+string[]                            no_placed   # IDs of cargo units that did not fit
 float64                              placed_area_m2
 float64                              free_area_m2
 float64                              total_area_m2
