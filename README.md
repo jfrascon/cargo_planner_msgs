@@ -48,9 +48,10 @@ When `rotated` is true, the cargo unit's x-axis is aligned with the container's 
 
 ## Services
 
-### `SetContainerOccupancyGrid.srv`
+### `ContainerOccupancyGridRegistration.srv`
 
-Store the OccupancyGrid of the container interior.
+Service type used by `container_occupancy_grid_registration` to store the
+OccupancyGrid of the container interior.
 
 ```
 Request:
@@ -65,9 +66,10 @@ Container's length and width are inferred from grid metadata:
 `container_length = info.width * info.resolution`,
 `container_width  = info.height * info.resolution`.
 
-### `SetCargoList.srv`
+### `CargoListRegistration.srv`
 
-Provide the list of cargo units to load (call before `PlanCargo`).
+Service type used by `cargo_list_registration` to provide the list of cargo
+units to load before calling `cargo_planning`.
 
 ```
 Request:
@@ -77,9 +79,10 @@ Response:
   string message
 ```
 
-### `PlanCargo.srv`
+### `PlanCargo.action`
 
-Run the placement algorithm and return the cargo plan.
+Action type used by `cargo_planning` to run the placement algorithm and return
+the cargo plan.
 
 ```
 Request: (empty)
@@ -94,8 +97,8 @@ Response:
 
 ## Typical call sequence
 
-- Step 1: Call `SetContainerOccupancyGrid` to provide the container grid map.
-- Step 2: Call `SetCargoList` to provide the list of cargo units to load.
-- Step 3: Call `PlanCargo` to run the planner and get the placement results.
+- Step 1: Call `container_occupancy_grid_registration` to provide the container grid map.
+- Step 2: Call `cargo_list_registration` to provide the list of cargo units to load.
+- Step 3: Call `cargo_planning` to run the planner and get the placement results.
 
 Step 1 and Step 2 can be done in either order, but both must be done before Step 3. You can also call Step 1 or Step 2 multiple times to update the grid map or cargo list, and then call Step 3 again to re-plan with the new information.

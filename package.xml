@@ -5,8 +5,8 @@
   <description>
     ROS 2 messages and services for the cargo_planner package.
     Defines the data model for cargo units, placement results,
-    and the three service interfaces: SetContainerOccupancyGrid, SetCargoList,
-    PlanCargo.
+    the service interfaces ContainerOccupancyGridRegistration and
+    CargoListRegistration, and the PlanCargo action.
   </description>
   <maintainer email="user@example.com">cargo_planner</maintainer>
   <license>MIT</license>

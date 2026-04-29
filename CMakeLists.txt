@@ -12,8 +12,8 @@ rosidl_generate_interfaces(
   ${PROJECT_NAME}
   "msg/CargoUnit.msg"
   "msg/CargoPlacement.msg"
-  "srv/SetContainerOccupancyGrid.srv"
-  "srv/SetCargoList.srv"
+  "srv/ContainerOccupancyGridRegistration.srv"
+  "srv/CargoListRegistration.srv"
   "action/PlanCargo.action"
   DEPENDENCIES
   action_msgs

@@ -1,23 +1,23 @@
 # Asynchronous 2D cargo placement planning.
 #
 # The caller sends an empty goal. The planner reads the container occupancy grid
-# and cargo list that were previously stored via set_container_occupancy_grid and
-# set_cargo_list.
+# and cargo list that were previously stored via
+# container_occupancy_grid_registration and cargo_list_registration.
 # The action server accepts the goal, immediately publishes a "computing..."
 # feedback message, runs the placement algorithm in a background thread, and
 # returns the full cargo plan when done.
 #
 # Preconditions (checked when the goal is accepted):
-#   - set_container_occupancy_grid must have been called at least once.
-#   - set_cargo_list must have been called at least once, OR cargo units must be
-#     configured via the "cargo" YAML parameter.
+#   - container_occupancy_grid_registration must have been called at least once.
+#   - cargo_list_registration must have been called at least once.
 #
 # If either precondition is not met the goal is aborted with success=false and
 # a descriptive message.
 
 # ── Goal ─────────────────────────────────────────────────────────────────────
-# Empty: the planner uses state already stored via set_container_occupancy_grid /
-# set_cargo_list.  No per-invocation configuration is needed.
+# Empty: the planner uses state already stored via
+# container_occupancy_grid_registration and cargo_list_registration.  No
+# per-invocation configuration is needed.
 ---
 
 # ── Result ───────────────────────────────────────────────────────────────────
