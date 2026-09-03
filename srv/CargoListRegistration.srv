@@ -1,4 +1,5 @@
-# Provide the ordered list of cargo units to be loaded.
+# Replace the stored cargo list.
+# The planner validates every unit and then sorts the list by descending volume.
 
 cargo_planner_msgs/CargoUnit[] cargo_units  # cargo units to load
 ---

@@ -13,10 +13,10 @@
 #  ly: size along cargo's y-axis
 #  lz: size along cargo's z-axis
 #
-# Only lx and ly participate in the 2D placement algorithm.
-# lz is stored and forwarded to the 3D output pose (z-center = lz / 2).
+# lx and ly define the 2D footprint.
+# lz must fit within the registered container height and sets the output z-center to lz / 2.
 
-string  id    # unique cargo unit identifier (e.g. "c1", "EUR-001")
-float64 lx    # cargo size along x-axis [m]  (EUR-pallet: 1.2)
-float64 ly    # cargo size  along y-axis [m]  (EUR-pallet: 0.8)
-float64 lz    # cargo size along z-axis [m]  (load included)
+string  id    # unique, non-blank cargo unit identifier, for example "c1" or "EUR-001"
+float64 lx    # strictly positive finite size along the cargo x-axis [m]
+float64 ly    # strictly positive finite size along the cargo y-axis [m]
+float64 lz    # strictly positive finite size along the cargo z-axis [m], including the load

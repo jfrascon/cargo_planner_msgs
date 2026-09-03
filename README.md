@@ -1,104 +1,136 @@
 # cargo_planner_msgs
 
-Package with ROS2 interfaces (messages and services) to interact with the `cargo_planner` node.
+`cargo_planner_msgs` defines the ROS 2 data contract used by `cargo_planner`.
+It contains two messages, two registration services and one planning action.
+It contains no planning algorithm or executable.
+
+## Coordinate and unit conventions
+
+All lengths use meters.
+All planar rotations use yaw around the positive Z axis.
+
+The container coordinate frame is supplied by the registered `nav_msgs/msg/OccupancyGrid`:
+
+- X follows grid columns from the container door toward the back wall.
+- Y follows grid rows from the origin-side wall toward the opposite wall.
+- Z starts at the container floor and points upward.
+
+`CargoPlacement.pose` has no header.
+Consumers must interpret it in the frame stored in the registered occupancy grid header.
 
 ## Messages
 
 ### `CargoUnit.msg`
 
-A cargo unit is the full rectangular load handled by the planner. It typically consists of a pallet and the goods carried on it.
+A cargo unit is the complete rectangular load handled by the planner, including its pallet and
+goods.
 
-<img src="imgs/cargo_unit.png" width="45%">
+| Field | Meaning |
+| --- | --- |
+| `id` | Unique, non-empty cargo identifier. |
+| `lx` | Positive finite size along the cargo X axis in meters. |
+| `ly` | Positive finite size along the cargo Y axis in meters. |
+| `lz` | Positive finite size along the cargo Z axis in meters. |
 
+![Cargo unit](imgs/cargo_unit.png)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique cargo identifier |
-| `lx` | `float64` | Size along cargo's x-axis [m] |
-| `ly` | `float64` | Size along cargo's y-axis [m] |
-| `lz` | `float64` | Size along cargo's z-axis [m] |
+The cargo X axis follows the pallet's longest horizontal dimension.
+The Y axis follows its width and the Z axis is vertical.
 
-The x-axis in the cargo unit is always aligned with the length of the pallet (the longest horizontal dimension).
-The y-axis is aligned with the width of the pallet.
-The z-axis is vertical.
+![Cargo axes](imgs/cargo_axes.png)
 
-<img src="imgs/cargo_axes.png" width="60%">
+The planner models one rectangular cuboid with no overhang.
+Goods extending beyond the declared footprint can make a geometrically valid plan physically
+impossible.
 
-EUR-pallet standard footprint: `lx = 1.2 m, ly = 0.8 m`.
-
-**Warning:** No goods must go beyond the pallet footprint. The planner assumes the cargo unit is a rectangular cuboid with dimensions `(lx m, ly m, lz m)` and does not account for any overhang. If the actual cargo has goods sticking out beyond the pallet footprint, the planner may produce placements that are not physically feasible.
+The 2D collision algorithm uses `lx` and `ly`.
+The planner compares `lz` with the registered container height and rejects units that are too tall.
 
 ### `CargoPlacement.msg`
 
-Result of placing one cargo unit inside the truck's container:
+A placement reports the center pose selected for one cargo unit.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Matches `CargoUnit.id` |
-| `pose` | `geometry_msgs/Pose` | 3D center pose in `container_frame` |
-| `rotated` | `bool` | True if placed at 90° yaw |
+| Field | Meaning |
+| --- | --- |
+| `id` | Matches `CargoUnit.id`. |
+| `pose` | Cargo center in the registered occupancy-grid frame. |
+| `rotated` | `false` for zero yaw and `true` for `pi / 2` yaw. |
 
-Only `lx` and `ly` participate in the 2D placement algorithm.
-`lz` is stored and forwarded to the 3D output pose (`z-center = lz / 2`).
+The output Z coordinate is `lz / 2`, so the cuboid rests on the container floor.
 
-When `rotated` is false, the cargo unit's x-axis is aligned with the container's x-axis and y-axis with the container's y-axis.
-When `rotated` is true, the cargo unit's x-axis is aligned with the container's y-axis and y-axis with the container's x-axis. In other words, the cargo unit is rotated 90° around the z-axis compared to the non-rotated case.
-
-<img src="imgs/rotated_cargo.png" width="100%">
+![Rotated cargo](imgs/rotated_cargo.png)
 
 ## Services
 
 ### `ContainerOccupancyGridRegistration.srv`
 
-Service type used by `container_occupancy_grid_registration` to store the
-OccupancyGrid of the container interior.
+This service replaces the stored container map.
 
-```
 Request:
-  nav_msgs/OccupancyGrid grid_map
-  float64                container_height
-Response:
-  bool   success
-  string message
+
+- `grid_map`: occupancy grid of the container interior.
+- `container_height`: positive finite interior height in meters.
+
+The planner derives planar dimensions from:
+
+```text
+container_length = grid_map.info.width  * grid_map.info.resolution
+container_width  = grid_map.info.height * grid_map.info.resolution
 ```
 
-Container's length and width are inferred from grid metadata:
-`container_length = info.width * info.resolution`,
-`container_width  = info.height * info.resolution`.
+Response:
+
+- `success`: whether validation and storage succeeded.
+- `message`: human-readable result.
 
 ### `CargoListRegistration.srv`
 
-Service type used by `cargo_list_registration` to provide the list of cargo
-units to load before calling `cargo_planning`.
+This service replaces the stored cargo list.
+Every cargo unit is validated and the planner sorts the list by descending volume before planning.
+The request order is therefore not the planning order.
 
+## `PlanCargo.action`
+
+The goal is empty because the action uses the container grid and cargo list stored by the services.
+Both registrations must have succeeded before goal execution begins.
+A second goal is rejected while planning is active.
+
+The result contains:
+
+- `success` and a human-readable `message`.
+- Successful `placements`.
+- `no_placed` IDs for valid units that did not fit.
+- Placed, remaining usable and total grid areas in square meters.
+- Utilization as `placed_area_m2 / total_area_m2 * 100`.
+
+Feedback reports the total cargo count.
+The placed count is zero while computing and contains the final count immediately before the result.
+
+Cancellation is accepted.
+The current algorithm checks cancellation before and after its non-interruptible planning step.
+
+## Call sequence
+
+1. Call `container_occupancy_grid_registration`.
+2. Call `cargo_list_registration`.
+3. Send an empty goal to `cargo_planning`.
+
+The two registration services may be called in either order and may be called again to replace
+stored state.
+
+## Build and test
+
+From the workspace root:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+colcon build --merge-install --packages-select cargo_planner_msgs
+source install/setup.bash
+colcon test --merge-install --packages-select cargo_planner_msgs
+colcon test-result --test-result-base build/cargo_planner_msgs --verbose
 ```
-Request:
-  cargo_planner_msgs/CargoUnit[] cargo_units
-Response:
-  bool   success
-  string message
-```
 
-### `PlanCargo.action`
+## License
 
-Action type used by `cargo_planning` to run the placement algorithm and return
-the cargo plan.
-
-```
-Request: (empty)
-Response:
-  cargo_planner_msgs/CargoPlacement[] placements
-  string[]  no_placed
-  float64   placed_area_m2
-  float64   free_area_m2
-  float64   total_area_m2
-  float64   utilization_pct
-```
-
-## Typical call sequence
-
-- Step 1: Call `container_occupancy_grid_registration` to provide the container grid map.
-- Step 2: Call `cargo_list_registration` to provide the list of cargo units to load.
-- Step 3: Call `cargo_planning` to run the planner and get the placement results.
-
-Step 1 and Step 2 can be done in either order, but both must be done before Step 3. You can also call Step 1 or Step 2 multiple times to update the grid map or cargo list, and then call Step 3 again to re-plan with the new information.
+This package is distributed under the Apache License 2.0.
+See [LICENSE](LICENSE).

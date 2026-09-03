@@ -8,10 +8,10 @@
 #  container_width  = grid_map.info.height * grid_map.info.resolution
 #
 # container_height is required because it is not encoded in the OccupancyGrid.
-# Requests with container_height <= 0.0 are invalid and must be rejected.
+# container_height must be positive and finite.
 
-nav_msgs/OccupancyGrid grid_map      # container grid (0 = free, 100 = occupied)
-float64                container_height  # container interior height [m]
+nav_msgs/OccupancyGrid grid_map          # container grid, where 0 is free and 100 is occupied
+float64                container_height  # positive finite container interior height [m]
 ---
 bool   success
 string message
