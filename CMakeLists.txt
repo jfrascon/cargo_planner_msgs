@@ -6,7 +6,6 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(
   ${PROJECT_NAME}
@@ -18,8 +17,15 @@ rosidl_generate_interfaces(
   DEPENDENCIES
   action_msgs
   geometry_msgs
-  nav_msgs
-  std_msgs)
+  nav_msgs)
+
+install(DIRECTORY imgs DESTINATION share/${PROJECT_NAME})
+install(FILES README.md LICENSE DESTINATION share/${PROJECT_NAME})
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+endif()
 
 ament_export_dependencies(rosidl_default_runtime)
 ament_package()

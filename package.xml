@@ -2,14 +2,9 @@
 <package format="3">
   <name>cargo_planner_msgs</name>
   <version>0.1.0</version>
-  <description>
-    ROS 2 messages and services for the cargo_planner package.
-    Defines the data model for cargo units, placement results,
-    the service interfaces ContainerOccupancyGridRegistration and
-    CargoListRegistration, and the PlanCargo action.
-  </description>
-  <maintainer email="user@example.com">cargo_planner</maintainer>
-  <license>MIT</license>
+  <description>ROS 2 messages, services, and actions used by cargo_planner.</description>
+  <maintainer email="jfrascon@gmail.com">Juan Francisco Rascon Crespo</maintainer>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
@@ -17,9 +12,11 @@
   <depend>action_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
-  <depend>std_msgs</depend>
-
   <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_xmllint</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
