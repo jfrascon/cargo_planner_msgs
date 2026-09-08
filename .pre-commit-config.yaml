@@ -4,11 +4,13 @@
 #
 # Or:
 #
-#     pre-commit install
+#     pre-commit install  # (runs every time you commit in git)
 #
 # To update this file:
 #
 #     pre-commit autoupdate
+#
+# See https://github.com/pre-commit/pre-commit
 
 default_install_hook_types:
   - pre-commit
@@ -17,16 +19,25 @@ default_install_hook_types:
 exclude: ^build/|^install/|^log/|^\.vscode/
 
 repos:
+  # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
-        # 25600 KiB = 25 MiB; interface documentation may contain maintained images.
+        # 25600 KiB = 25 MiB; ROS projects may need to version reasonably sized mesh/assets files.
         args: [--maxkb=25600]
+      - id: check-ast
       - id: check-case-conflict
+      - id: check-executables-have-shebangs
       - id: check-merge-conflict
+      - id: check-shebang-scripts-are-executable
       - id: check-symlinks
+      - id: check-yaml
+        exclude: (^|/)\.clang-format$
+      - id: check-json
       - id: check-xml
+      - id: check-toml
+      - id: debug-statements
       - id: detect-private-key
       - id: end-of-file-fixer
         exclude_types: [svg]
@@ -41,22 +52,66 @@ repos:
           - --branch=main
           - --branch=master
 
+  # YAML hooks
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.16.0
+    hooks:
+      # Keep sequence markers indented under their parent key. This is easier to
+      # scan than the valid but visually flat YAML produced with offset zero.
+      - id: pretty-format-yaml
+        args: [--autofix, --preserve-quotes, --offset, "2"]
+
+  # ROS/ament hooks
+  # These hooks use language: system and require the corresponding ament tools
+  # to be installed in the development environment.
   - repo: local
     hooks:
       - id: ament_lint_cmake
         name: ament_lint_cmake
-        description: Validate CMakeLists.txt with the ROS 2 CMake linter.
+        description: Check format of CMakeLists.txt files.
         entry: ament_lint_cmake
         language: system
         files: CMakeLists\.txt$
 
       - id: ament_xmllint
         name: ament_xmllint
-        description: Validate XML files with the ROS 2 XML wrapper.
+        description: Check XML files with the ROS 2 XML linter.
         entry: ament_xmllint
         language: system
         types: [xml]
 
+      # Keep this hook as a reference for projects with a strict copyright policy.
+      # - id: ament_copyright
+      #   name: ament_copyright
+      #   description: Check if copyright notice is available in all files.
+      #   entry: ament_copyright
+      #   language: system
+      #   exclude: .*/conf\.py$
+
+  # Shell hooks
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      - id: shfmt
+        args: [-w, -s, -i=4]
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1-1
+    hooks:
+      # ShellCheck may report many warnings in legacy scripts, but it catches real bugs.
+      # Prefer justified local suppressions over disabling the hook; for example,
+      # '# shellcheck disable=SC1091' before sourcing a file that only exists at runtime.
+      - id: shellcheck
+
+  # Secrets scanning
+  # Gitleaks detects tokens, passwords, PATs, API keys, and other secrets beyond private keys.
+  # Keep this documented for future use; uncomment when broader secret scanning is desired.
+  # - repo: https://github.com/gitleaks/gitleaks
+  #   rev: v8.24.2
+  #   hooks:
+  #     - id: gitleaks
+
+  # Conventional Commits validation (commit message hook)
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v4.4.0
     hooks:

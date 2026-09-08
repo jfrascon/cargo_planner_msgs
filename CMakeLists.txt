@@ -24,6 +24,7 @@ install(FILES README.md LICENSE DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+  # Register the linters declared as test dependencies in package.xml.
   ament_lint_auto_find_test_dependencies()
 endif()
 
